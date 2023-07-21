@@ -25,7 +25,7 @@ import java.util.List;
 public class R58Activity extends AppCompatActivity implements View.OnClickListener{
 
 
-    private Button sample,text,barcode,qrcode,bitmap;
+    private Button sample,text,barcode,qrcode,bitmap,info;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -39,12 +39,14 @@ public class R58Activity extends AppCompatActivity implements View.OnClickListen
         barcode = findViewById(R.id.bt_58barcode);
         qrcode = findViewById(R.id.bt_58qr);
         bitmap = findViewById(R.id.bt_58bitmap);
+        info = findViewById(R.id.bt_info);
 
         sample.setOnClickListener(this);
         text.setOnClickListener(this);
         barcode.setOnClickListener(this);
         qrcode.setOnClickListener(this);
         bitmap.setOnClickListener(this);
+        info.setOnClickListener(this);
     }
 
 
@@ -75,11 +77,74 @@ public class R58Activity extends AppCompatActivity implements View.OnClickListen
             printBitmap();
 
         }
-
-
-
+        if (id == R.id.bt_info) {
+            printInfo();
+        }
     }
 
+    private void printInfo() {
+        if (MainActivity.ISCONNECT){
+            MainActivity.myBinder.WriteSendData(new TaskCallback() {
+                @Override
+                public void OnSucceed() {
+                    Toast.makeText(getApplicationContext(),getString(R.string.con_success),Toast.LENGTH_SHORT).show();
+
+                }
+
+                @Override
+                public void OnFailed() {
+                    Toast.makeText(getApplicationContext(),getString(R.string.con_failed),Toast.LENGTH_SHORT).show();
+                }
+            }, () -> {
+                List<byte[]> list = new ArrayList<>();
+                list.add(DataForSendToPrinterPos58.initializePrinter());
+                list.add(DataForSendToPrinterPos58.selectAlignment(1));
+
+//                    list.add(DataForSendToPrinterPos58.setAbsolutePrintPosition(50,00));//设置初始位置
+                list.add(DataForSendToPrinterPos58.selectCharacterSize(0));//字体放大一倍
+                list.add(StringUtils.strTobytes("您已完成核酸检测"));
+
+                list.add(DataForSendToPrinterPos58.printAndFeedLine());
+                list.add(DataForSendToPrinterPos58.printAndFeedLine());
+                int x = 0;
+
+                list.add(DataForSendToPrinterPos58.initializePrinter());
+                list.add(DataForSendToPrinterPos58.setAbsolutePrintPosition(x,00));
+                list.add(StringUtils.strTobytes("姓名：" + "西门吹雪"));
+//                    list.add(DataForSendToPrinterPos58.setAbsolutePrintPosition(220,00));
+//                    list.add(StringUtils.strTobytes("西门吹雪"));
+                list.add(DataForSendToPrinterPos58.printAndFeedLine());
+                list.add(DataForSendToPrinterPos58.printAndFeedLine());
+
+                list.add(DataForSendToPrinterPos58.initializePrinter());
+                list.add(DataForSendToPrinterPos58.setAbsolutePrintPosition(x,00));
+                list.add(StringUtils.strTobytes("采集时间：" + "2012-07-08 12:12:12"));
+//                    list.add(DataForSendToPrinterPos58.setAbsolutePrintPosition(220,00));
+//                    list.add(StringUtils.strTobytes("2012-07-08 12:12:12"));
+                list.add(DataForSendToPrinterPos58.printAndFeedLine());
+                list.add(DataForSendToPrinterPos58.printAndFeedLine());
+
+                list.add(DataForSendToPrinterPos58.initializePrinter());
+                list.add(DataForSendToPrinterPos58.setAbsolutePrintPosition(x,00));
+                list.add(StringUtils.strTobytes("重点人群类别：" + "那那那楠楠安安安"));
+//                    list.add(DataForSendToPrinterPos58.setAbsolutePrintPosition(220,00));
+//                    list.add(StringUtils.strTobytes("那那那楠楠安安安"));
+                list.add(DataForSendToPrinterPos58.printAndFeedLine());
+                list.add(DataForSendToPrinterPos58.printAndFeedLine());
+
+                list.add(DataForSendToPrinterPos58.initializePrinter());
+                list.add(DataForSendToPrinterPos58.setAbsolutePrintPosition(x,00));
+                list.add(StringUtils.strTobytes("采集地址：" + "那那那楠楠安安安那那那楠楠安安安那那那楠楠安安安那那那楠楠安安安那那那楠楠安安安那那那楠楠安安安"));
+//                    list.add(DataForSendToPrinterPos58.setAbsolutePrintPosition(220,00));
+//                    list.add(StringUtils.strTobytes("那那那楠楠安安安那那那楠楠安安安那那那楠楠安安安那那那楠楠安安安那那那楠楠安安安那那那楠楠安安安"));
+                list.add(DataForSendToPrinterPos58.printAndFeedLine());
+                list.add(DataForSendToPrinterPos58.printAndFeedLine());
+                return list;
+            });
+        }else {
+            Toast.makeText(getApplicationContext(),getString(R.string.connect_first),Toast.LENGTH_SHORT).show();
+        }
+    }
     /**
      * 打印样张
      */

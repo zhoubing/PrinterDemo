@@ -36,22 +36,41 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
+import java.util.Timer;
+import java.util.TimerTask;
 
 @SuppressLint("MissingPermission")
-public class MainActivity extends AppCompatActivity implements View.OnClickListener{
+public class MainActivity extends AppCompatActivity implements View.OnClickListener {
 
     public static IMyBinder myBinder;
 
-    ServiceConnection mSerconnection= new ServiceConnection() {
+    ServiceConnection mSerconnection = new ServiceConnection() {
         @Override
         public void onServiceConnected(ComponentName name, IBinder service) {
-            myBinder= (IMyBinder) service;
-            Log.e("myBinder","connect");
+            myBinder = (IMyBinder) service;
+            Log.e("myBinder", "connect");
+            new Timer().scheduleAtFixedRate(new TimerTask() {
+                @Override
+                public void run() {
+                    myBinder.CheckLinkedState(new TaskCallback() {
+                        @Override
+                        public void OnSucceed() {
+                            usbList = PosPrinterDev.GetUsbPathNames(MainActivity.this);
+                            Log.e("USB CheckLinkedState", "OnSucceed " + usbList.size());
+                        }
+
+                        @Override
+                        public void OnFailed() {
+                            Log.e("USB CheckLinkedState", "OnFailed");
+                        }
+                    });
+                }
+            }, 0, 2000);
         }
 
         @Override
         public void onServiceDisconnected(ComponentName name) {
-            Log.e("myBinder","disconnect");
+            Log.e("myBinder", "disconnect");
         }
     };
 
@@ -61,21 +80,20 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         setContentView(R.layout.activity_main);
 
         //bind service，get imyBinder
-        Intent intent =new Intent(this, PosprinterService.class);
-        bindService(intent,mSerconnection,BIND_AUTO_CREATE);
-
+        Intent intent = new Intent(this, PosprinterService.class);
+        bindService(intent, mSerconnection, BIND_AUTO_CREATE);
         initView();
     }
 
     private Spinner port;
     private TextView adrress;
     private EditText ip_adrress;
-    private Button connect,disconnect,pos58,pos80,tsc80,other;
-    private int portType=0;//0是网络，1是蓝牙，2是USB
-    public static boolean ISCONNECT=false;
+    private Button connect, disconnect, pos58, pos80, tsc80, other;
+    private int portType = 0;//0是网络，1是蓝牙，2是USB
+    public static boolean ISCONNECT = false;
 
-    private void initView(){
-        port=findViewById(R.id.sp_port);
+    private void initView() {
+        port = findViewById(R.id.sp_port);
         adrress = findViewById(R.id.tv_address);
         ip_adrress = findViewById(R.id.et_address);
         connect = findViewById(R.id.connect);
@@ -89,12 +107,12 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         port.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             @Override
             public void onItemSelected(AdapterView<?> adapterView, View view, int i, long l) {
-                portType=i;
-                switch (i){
+                portType = i;
+                switch (i) {
                     case 0:
-                       ip_adrress.setVisibility(View.VISIBLE);
-                       adrress.setVisibility(View.GONE);
-                       break;
+                        ip_adrress.setVisibility(View.VISIBLE);
+                        adrress.setVisibility(View.GONE);
+                        break;
                     case 1:
                         ip_adrress.setVisibility(View.GONE);
                         adrress.setVisibility(View.VISIBLE);
@@ -130,8 +148,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     public void onClick(View view) {
         int id = view.getId();
 
-        if (id== R.id.connect){
-            switch (portType){
+        if (id == R.id.connect) {
+            switch (portType) {
                 case 0:
                     connectNet();
                     break;
@@ -144,16 +162,16 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             }
         }
 
-        if (id == R.id.disconnect){
+        if (id == R.id.disconnect) {
             disConnect();
         }
 
-        if (id== R.id.tv_address){
+        if (id == R.id.tv_address) {
 
-            switch (portType){
+            switch (portType) {
                 case 1:
-                   setBluetooth();
-                   break;
+                    setBluetooth();
+                    break;
                 case 2:
                     setUSB();
                     break;
@@ -161,40 +179,40 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             }
         }
 
-        if(id == R.id.bt_pos80){
-            if (ISCONNECT){
+        if (id == R.id.bt_pos80) {
+            if (ISCONNECT) {
                 Intent intent = new Intent(this, R80Activity.class);
                 startActivity(intent);
-            }else {
-                Toast.makeText(getApplicationContext(),getString(R.string.connect_first),Toast.LENGTH_SHORT).show();
+            } else {
+                Toast.makeText(getApplicationContext(), getString(R.string.connect_first), Toast.LENGTH_SHORT).show();
             }
 
         }
 
-        if (id == R.id.bt_pos58){
-            if (ISCONNECT){
+        if (id == R.id.bt_pos58) {
+            if (ISCONNECT) {
                 Intent intent = new Intent(this, R58Activity.class);
                 startActivity(intent);
-            }else {
-                Toast.makeText(getApplicationContext(),getString(R.string.connect_first),Toast.LENGTH_SHORT).show();
+            } else {
+                Toast.makeText(getApplicationContext(), getString(R.string.connect_first), Toast.LENGTH_SHORT).show();
             }
         }
 
-        if (id == R.id.bt_tsc80){
-            if (ISCONNECT){
+        if (id == R.id.bt_tsc80) {
+            if (ISCONNECT) {
                 Intent intent = new Intent(this, TscActivity.class);
                 startActivity(intent);
-            }else {
-                Toast.makeText(getApplicationContext(),getString(R.string.connect_first),Toast.LENGTH_SHORT).show();
+            } else {
+                Toast.makeText(getApplicationContext(), getString(R.string.connect_first), Toast.LENGTH_SHORT).show();
             }
         }
 
-        if (id == R.id.bt_other){
-            if (ISCONNECT){
+        if (id == R.id.bt_other) {
+            if (ISCONNECT) {
                 Intent intent = new Intent(this, OtherActivity.class);
                 startActivity(intent);
-            }else {
-                Toast.makeText(getApplicationContext(),getString(R.string.connect_first),Toast.LENGTH_SHORT).show();
+            } else {
+                Toast.makeText(getApplicationContext(), getString(R.string.connect_first), Toast.LENGTH_SHORT).show();
             }
         }
     }
@@ -202,92 +220,92 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     /**
      * 网络连接
      */
-    private void connectNet(){
+    private void connectNet() {
         String ip = ip_adrress.getText().toString();
-        if (ip!=null||ISCONNECT==false){
+        if (ip != null || ISCONNECT == false) {
             myBinder.ConnectNetPort(ip, 9100, new TaskCallback() {
                 @Override
                 public void OnSucceed() {
                     ISCONNECT = true;
-                    Toast.makeText(getApplicationContext(),getString(R.string.con_success),Toast.LENGTH_SHORT).show();
+                    Toast.makeText(getApplicationContext(), getString(R.string.con_success), Toast.LENGTH_SHORT).show();
                 }
 
                 @Override
                 public void OnFailed() {
                     ISCONNECT = false;
-                    Toast.makeText(getApplicationContext(),getString(R.string.con_failed),Toast.LENGTH_SHORT).show();
+                    Toast.makeText(getApplicationContext(), getString(R.string.con_failed), Toast.LENGTH_SHORT).show();
                 }
             });
 
-        }else {
-            Toast.makeText(getApplicationContext(),getString(R.string.con_failed),Toast.LENGTH_SHORT).show();
+        } else {
+            Toast.makeText(getApplicationContext(), getString(R.string.con_failed), Toast.LENGTH_SHORT).show();
         }
     }
 
     /**
      * 连接蓝牙
      */
-    private void connectBT(){
-        String BtAdress=adrress.getText().toString().trim();
-        if (BtAdress.equals(null)||BtAdress.equals("")){
-            Toast.makeText(getApplicationContext(),getString(R.string.con_failed),Toast.LENGTH_SHORT).show();
-        }else {
+    private void connectBT() {
+        String BtAdress = adrress.getText().toString().trim();
+        if (BtAdress.equals(null) || BtAdress.equals("")) {
+            Toast.makeText(getApplicationContext(), getString(R.string.con_failed), Toast.LENGTH_SHORT).show();
+        } else {
             myBinder.ConnectBtPort(BtAdress, new TaskCallback() {
                 @Override
                 public void OnSucceed() {
-                    ISCONNECT=true;
-                    Toast.makeText(getApplicationContext(),getString(R.string.con_success),Toast.LENGTH_SHORT).show();
+                    ISCONNECT = true;
+                    Toast.makeText(getApplicationContext(), getString(R.string.con_success), Toast.LENGTH_SHORT).show();
                 }
 
                 @Override
                 public void OnFailed() {
-                    ISCONNECT=false;
-                    Toast.makeText(getApplicationContext(),getString(R.string.con_failed),Toast.LENGTH_SHORT).show();
+                    ISCONNECT = false;
+                    Toast.makeText(getApplicationContext(), getString(R.string.con_failed), Toast.LENGTH_SHORT).show();
                 }
-            } );
+            });
         }
     }
 
     /**
      * 连接usb
      */
-    private void connectUSB(){
+    private void connectUSB() {
         String usbAddress = adrress.getText().toString().trim();
-        if (usbAddress.equals(null)||usbAddress.equals("")){
-            Toast.makeText(getApplicationContext(),getString(R.string.discon),Toast.LENGTH_SHORT).show();
-        }else {
+        if (usbAddress.equals(null) || usbAddress.equals("")) {
+            Toast.makeText(getApplicationContext(), getString(R.string.discon), Toast.LENGTH_SHORT).show();
+        } else {
             myBinder.ConnectUsbPort(getApplicationContext(), usbAddress, new TaskCallback() {
                 @Override
                 public void OnSucceed() {
                     ISCONNECT = true;
-                    Toast.makeText(getApplicationContext(),getString(R.string.connect),Toast.LENGTH_SHORT).show();
+                    Toast.makeText(getApplicationContext(), getString(R.string.connect), Toast.LENGTH_SHORT).show();
                 }
 
                 @Override
                 public void OnFailed() {
                     ISCONNECT = false;
-                    Toast.makeText(getApplicationContext(),getString(R.string.discon),Toast.LENGTH_SHORT).show();
+                    Toast.makeText(getApplicationContext(), getString(R.string.discon), Toast.LENGTH_SHORT).show();
                 }
-            } );
+            });
         }
     }
 
     /**
      * 断开连接
      */
-    private void disConnect(){
-        if (ISCONNECT){
+    private void disConnect() {
+        if (ISCONNECT) {
             myBinder.DisconnectCurrentPort(new TaskCallback() {
                 @Override
                 public void OnSucceed() {
                     ISCONNECT = false;
-                    Toast.makeText(getApplicationContext(),"disconnect ok",Toast.LENGTH_SHORT).show();
+                    Toast.makeText(getApplicationContext(), "disconnect ok", Toast.LENGTH_SHORT).show();
                 }
 
                 @Override
                 public void OnFailed() {
                     ISCONNECT = true;
-                    Toast.makeText(getApplicationContext(),"disconnect failed",Toast.LENGTH_SHORT).show();
+                    Toast.makeText(getApplicationContext(), "disconnect failed", Toast.LENGTH_SHORT).show();
                 }
             });
         }
@@ -296,9 +314,9 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
     private List<String> btList = new ArrayList<>();
     private ArrayList<String> btFoundList = new ArrayList<>();
-    private ArrayAdapter<String> BtBoudAdapter ,BtfoundAdapter;
+    private ArrayAdapter<String> BtBoudAdapter, BtfoundAdapter;
     private View BtDialogView;
-    private ListView BtBoundLv,BtFoundLv;
+    private ListView BtBoundLv, BtFoundLv;
     private LinearLayout ll_BtFound;
     private AlertDialog btdialog;
     private Button btScan;
@@ -309,14 +327,14 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     选择蓝牙设备
      */
 
-    public void setBluetooth(){
-        bluetoothAdapter=BluetoothAdapter.getDefaultAdapter();
+    public void setBluetooth() {
+        bluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
         //判断时候打开蓝牙设备
-        if (!bluetoothAdapter.isEnabled()){
+        if (!bluetoothAdapter.isEnabled()) {
             //请求用户开启
-            Intent intent=new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE);
+            Intent intent = new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE);
             startActivityForResult(intent, 1);
-        }else {
+        } else {
 
             showblueboothlist();
 
@@ -327,30 +345,31 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         if (!bluetoothAdapter.isDiscovering()) {
             bluetoothAdapter.startDiscovery();
         }
-        LayoutInflater inflater=LayoutInflater.from(this);
-        BtDialogView=inflater.inflate(R.layout.printer_list, null);
-        BtBoudAdapter=new ArrayAdapter<String>(this, android.R.layout.simple_list_item_1, btList);
-        BtBoundLv= BtDialogView.findViewById(R.id.listView1);
-        btScan= BtDialogView.findViewById(R.id.btn_scan);
-        ll_BtFound= BtDialogView.findViewById(R.id.ll1);
-        BtFoundLv=(ListView) BtDialogView.findViewById(R.id.listView2);
-        BtfoundAdapter=new ArrayAdapter<String>(this, android.R.layout.simple_list_item_1, btFoundList);
+        LayoutInflater inflater = LayoutInflater.from(this);
+        BtDialogView = inflater.inflate(R.layout.printer_list, null);
+        BtBoudAdapter = new ArrayAdapter<String>(this, android.R.layout.simple_list_item_1, btList);
+        BtBoundLv = BtDialogView.findViewById(R.id.listView1);
+        btScan = BtDialogView.findViewById(R.id.btn_scan);
+        ll_BtFound = BtDialogView.findViewById(R.id.ll1);
+        BtFoundLv = (ListView) BtDialogView.findViewById(R.id.listView2);
+        BtfoundAdapter = new ArrayAdapter<String>(this, android.R.layout.simple_list_item_1, btFoundList);
         BtBoundLv.setAdapter(BtBoudAdapter);
         BtFoundLv.setAdapter(BtfoundAdapter);
-        btdialog=new AlertDialog.Builder(this).setTitle("BLE").setView(BtDialogView).create();
+        btdialog = new AlertDialog.Builder(this).setTitle("BLE").setView(BtDialogView).create();
         btdialog.show();
 
-        BtReciever=new DeviceReceiver(btFoundList,BtfoundAdapter,BtFoundLv);
+        BtReciever = new DeviceReceiver(btFoundList, BtfoundAdapter, BtFoundLv);
 
         //注册蓝牙广播接收者
-        IntentFilter filterStart=new IntentFilter(BluetoothDevice.ACTION_FOUND);
-        IntentFilter filterEnd=new IntentFilter(BluetoothAdapter.ACTION_DISCOVERY_FINISHED);
+        IntentFilter filterStart = new IntentFilter(BluetoothDevice.ACTION_FOUND);
+        IntentFilter filterEnd = new IntentFilter(BluetoothAdapter.ACTION_DISCOVERY_FINISHED);
         registerReceiver(BtReciever, filterStart);
         registerReceiver(BtReciever, filterEnd);
 
         setDlistener();
         findAvalibleDevice();
     }
+
     private void setDlistener() {
         // TODO Auto-generated method stub
         btScan.setOnClickListener(new View.OnClickListener() {
@@ -370,13 +389,13 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                                     long arg3) {
                 // TODO Auto-generated method stub
                 try {
-                    if(bluetoothAdapter!=null&&bluetoothAdapter.isDiscovering()){
+                    if (bluetoothAdapter != null && bluetoothAdapter.isDiscovering()) {
                         bluetoothAdapter.cancelDiscovery();
 
                     }
 
-                    String mac=btList.get(arg2);
-                    mac=mac.substring(mac.length()-17);
+                    String mac = btList.get(arg2);
+                    mac = mac.substring(mac.length() - 17);
 //                    String name=msg.substring(0, msg.length()-18);
                     //lv1.setSelection(arg2);
                     btdialog.cancel();
@@ -396,18 +415,18 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                                     long arg3) {
                 // TODO Auto-generated method stub
                 try {
-                    if(bluetoothAdapter!=null&&bluetoothAdapter.isDiscovering()){
+                    if (bluetoothAdapter != null && bluetoothAdapter.isDiscovering()) {
                         bluetoothAdapter.cancelDiscovery();
 
                     }
                     String mac;
-                    String msg=btFoundList.get(arg2);
-                    mac=msg.substring(msg.length()-17);
-                    String name=msg.substring(0, msg.length()-18);
+                    String msg = btFoundList.get(arg2);
+                    mac = msg.substring(msg.length() - 17);
+                    String name = msg.substring(0, msg.length() - 18);
                     //lv2.setSelection(arg2);
                     btdialog.cancel();
                     adrress.setText(mac);
-                    Log.i("TAG", "mac="+mac);
+                    Log.i("TAG", "mac=" + mac);
                 } catch (Exception e) {
                     // TODO Auto-generated catch block
                     e.printStackTrace();
@@ -422,20 +441,20 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     private void findAvalibleDevice() {
         // TODO Auto-generated method stub
         //获取可配对蓝牙设备
-        Set<BluetoothDevice> device=bluetoothAdapter.getBondedDevices();
+        Set<BluetoothDevice> device = bluetoothAdapter.getBondedDevices();
 
         btList.clear();
-        if(bluetoothAdapter!=null&&bluetoothAdapter.isDiscovering()){
+        if (bluetoothAdapter != null && bluetoothAdapter.isDiscovering()) {
             BtBoudAdapter.notifyDataSetChanged();
         }
-        if(device.size()>0){
+        if (device.size() > 0) {
             //存在已经配对过的蓝牙设备
-            for(Iterator<BluetoothDevice> it = device.iterator(); it.hasNext();){
-                BluetoothDevice btd=it.next();
-                btList.add(btd.getName()+'\n'+btd.getAddress());
+            for (Iterator<BluetoothDevice> it = device.iterator(); it.hasNext(); ) {
+                BluetoothDevice btd = it.next();
+                btList.add(btd.getName() + '\n' + btd.getAddress());
                 BtBoudAdapter.notifyDataSetChanged();
             }
-        }else{  //不存在已经配对过的蓝牙设备
+        } else {  //不存在已经配对过的蓝牙设备
             btList.add("No can be matched to use bluetooth");
             BtBoudAdapter.notifyDataSetChanged();
         }
@@ -443,53 +462,53 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     }
 
 
-
     View dialogView3;
     private TextView tv_usb;
-    private List<String> usbList,usblist;
+    private List<String> usbList, usblist;
     private ListView lv_usb;
     private ArrayAdapter<String> adapter3;
 
     /*
     uSB连接
      */
-    private void setUSB(){
-        LayoutInflater inflater=LayoutInflater.from(this);
-        dialogView3=inflater.inflate(R.layout.usb_link,null);
-        tv_usb= (TextView) dialogView3.findViewById(R.id.textView1);
-        lv_usb= (ListView) dialogView3.findViewById(R.id.listView1);
+    private void setUSB() {
+        LayoutInflater inflater = LayoutInflater.from(this);
+        dialogView3 = inflater.inflate(R.layout.usb_link, null);
+        tv_usb = (TextView) dialogView3.findViewById(R.id.textView1);
+        lv_usb = (ListView) dialogView3.findViewById(R.id.listView1);
 
 
-        usbList= PosPrinterDev.GetUsbPathNames(this);
-        if (usbList==null){
-            usbList=new ArrayList<>();
+        usbList = PosPrinterDev.GetUsbPathNames(this);
+        if (usbList == null) {
+            usbList = new ArrayList<>();
         }
-        usblist=usbList;
-        tv_usb.setText(getString(R.string.usb_pre_con)+usbList.size());
-        adapter3=new ArrayAdapter<String>(this,android.R.layout.simple_list_item_1,usbList);
+        usblist = usbList;
+        tv_usb.setText(getString(R.string.usb_pre_con) + usbList.size());
+        adapter3 = new ArrayAdapter<String>(this, android.R.layout.simple_list_item_1, usbList);
         lv_usb.setAdapter(adapter3);
 
 
-        AlertDialog dialog=new AlertDialog.Builder(this)
+        AlertDialog dialog = new AlertDialog.Builder(this)
                 .setView(dialogView3).create();
         dialog.show();
 
         setUsbLisener(dialog);
 
     }
-    String usbDev="";
+
+    String usbDev = "";
+
     public void setUsbLisener(final AlertDialog dialog) {
 
         lv_usb.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
-                usbDev=usbList.get(i);
+                usbDev = usbList.get(i);
                 adrress.setText(usbDev);
                 dialog.cancel();
-                Log.e("usbDev: ",usbDev);
+                Log.e("usbDev: ", usbDev);
             }
         });
-
 
 
     }

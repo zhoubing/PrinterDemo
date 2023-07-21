@@ -9,39 +9,51 @@
 
     <Button
         android:id="@+id/bt_rcp"
+        android:layout_width="match_parent"
+        android:layout_height="45dp"
         android:layout_margin="15dp"
         android:background="@drawable/customer_button_selector"
-        android:text="@string/sample"
-        android:layout_width="match_parent"
-        android:layout_height="45dp" />
+        android:text="@string/sample" />
+
     <Button
         android:id="@+id/bt_58text"
+        android:layout_width="match_parent"
+        android:layout_height="45dp"
         android:layout_margin="15dp"
         android:background="@drawable/customer_button_selector"
-        android:text="@string/print_text"
-        android:layout_width="match_parent"
-        android:layout_height="45dp" />
+        android:text="@string/print_text" />
+
     <Button
         android:id="@+id/bt_58barcode"
+        android:layout_width="match_parent"
+        android:layout_height="45dp"
         android:layout_margin="15dp"
         android:background="@drawable/customer_button_selector"
-        android:text="@string/print_barcode"
-        android:layout_width="match_parent"
-        android:layout_height="45dp" />
+        android:text="@string/print_barcode" />
+
     <Button
         android:id="@+id/bt_58qr"
+        android:layout_width="match_parent"
+        android:layout_height="45dp"
         android:layout_margin="15dp"
         android:background="@drawable/customer_button_selector"
-        android:text="@string/print_qrcode"
-        android:layout_width="match_parent"
-        android:layout_height="45dp" />
+        android:text="@string/print_qrcode" />
+
     <Button
         android:id="@+id/bt_58bitmap"
+        android:layout_width="match_parent"
+        android:layout_height="45dp"
         android:layout_margin="15dp"
         android:background="@drawable/customer_button_selector"
-        android:text="@string/print_bitmap"
-        android:layout_width="match_parent"
-        android:layout_height="45dp" />
+        android:text="@string/print_bitmap" />
 
+    <Button
+        android:id="@+id/bt_info"
+        android:layout_width="match_parent"
+        android:layout_height="45dp"
+        android:layout_margin="15dp"
+        android:background="@drawable/customer_button_selector"
+        android:text="打印"
+        android:visibility="visible" />
 
 </LinearLayout>
